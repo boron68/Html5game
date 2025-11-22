@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brawl Stars Style Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background-color: #1a1a2e;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        /* Загальні стилі для всіх сцен */
+        .scene {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 0.5s;
+        }
+        
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        button {
+            background-color: #4a4af0;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 10px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #3a3ad0;
+        }
+        
+        /* Сцена завантаження */
+        #loading-scene {
+            background-color: #16213e;
+        }
+        
+        .loading-container {
+            text-align: center;
+        }
+        
+        .loading-bar {
+            width: 300px;
+            height: 20px;
+            background-color: #333;
+            border-radius: 10px;
+            margin: 20px auto;
+            overflow: hidden;
+        }
+        
+        .loading-progress {
+            height: 100%;
+            width: 0%;
+            background-color: #4a4af0;
+            transition: width 0.3s;
+        }
+        
+        /* Сцена реєстрації/входу */
+        #login-scene {
+            background-color: #0f3460;
+        }
+        
+        .login-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .login-container h2 {
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+        
+        .pin-image {
+            width: 100px;
+            margin: 20px auto;
+        }
+        
+        /* Сцена головного меню */
+        #menu-scene {
+            background-color: #1e6fba;
+        }
+        
+        .menu-container {
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .coins-display {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.3);
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .menu-pin {
+            width: 150px;
+            margin: 20px auto;
+        }
+        
+        .menu-buttons {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Сцена завантаження -->
+    <div id="loading-scene" class="scene">
+        <div class="loading-container">
+            <h1>Brawl Stars Style Game</h1>
+            <div class="loading-bar">
+                <div class="loading-progress" id="loading-progress"></div>
+            </div>
+            <p>Завантаження...</p>
+        </div>
+    </div>
+    
+    <!-- Сцена реєстрації/входу -->
+    <div id="login-scene" class="scene hidden">
+        <div class="login-container">
+            <img src="pin.png" alt="Pin" class="pin-image">
+            <h2>Вхід / Реєстрація</h2>
+            <div class="input-group">
+                <label for="username">Ім'я користувача</label>
+                <input type="text" id="username" placeholder="Введіть ім'я">
+            </div>
+            <div class="input-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" placeholder="Введіть пароль">
+            </div>
+            <button id="login-btn">Увійти</button>
+            <button id="register-btn">Зареєструватися</button>
+        </div>
+    </div>
+    
+    <!-- Сцена головного меню -->
+    <div id="menu-scene" class="scene hidden">
+        <div class="coins-display">Монети: <span id="coins-count">0</span></div>
+        <div class="menu-container">
+            <img src="pin.png" alt="Pin" class="menu-pin">
+            <h1>Головне меню</h1>
+            <div class="menu-buttons">
+                <button id="play-btn">Грати</button>
+                <button id="shop-btn">Магазин</button>
+                <button id="settings-btn">Налаштування</button>
+                <button id="logout-btn">Вийти</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Змінні гри
+        let coins = 0;
+        let currentScene = 'loading';
+        
+        // Елементи сцен
+        const loadingScene = document.getElementById('loading-scene');
+        const loginScene = document.getElementById('login-scene');
+        const menuScene = document.getElementById('menu-scene');
+        
+        // Елементи завантаження
+        const loadingProgress = document.getElementById('loading-progress');
+        
+        // Елементи входу
+        const loginBtn = document.getElementById('login-btn');
+        const registerBtn = document.getElementById('register-btn');
+        
+        // Елементи меню
+        const coinsCount = document.getElementById('coins-count');
+        const playBtn = document.getElementById('play-btn');
+        const shopBtn = document.getElementById('shop-btn');
+        const settingsBtn = document.getElementById('settings-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        
+        // Функція для зміни сцени
+        function changeScene(newScene) {
+            // Приховуємо поточну сцену
+            document.getElementById(`${currentScene}-scene`).classList.add('hidden');
+            
+            // Показуємо нову сцену
+            document.getElementById(`${newScene}-scene`).classList.remove('hidden');
+            
+            // Оновлюємо поточну сцену
+            currentScene = newScene;
+        }
+        
+        // Імітація завантаження
+        function simulateLoading() {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 10;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // Після завантаження переходимо до сцени входу
+                    setTimeout(() => {
+                        changeScene('login');
+                    }, 500);
+                }
+                
+                loadingProgress.style.width = `${progress}%`;
+            }, 200);
+        }
+        
+        // Обробники подій для кнопок входу
+        loginBtn.addEventListener('click', () => {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username && password) {
+                // Зберігаємо дані користувача (в реальній грі тут буде перевірка на сервері)
+                localStorage.setItem('username', username);
+                
+                // Додаємо монети для демонстрації
+                coins = 100;
+                coinsCount.textContent = coins;
+                
+                // Переходимо до головного меню
+                changeScene('menu');
+            } else {
+                alert('Будь ласка, заповніть всі поля!');
+            }
+        });
+        
+        registerBtn.addEventListener('click', () => {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username && password) {
+                // Зберігаємо дані користувача (в реальній грі тут буде реєстрація на сервері)
+                localStorage.setItem('username', username);
+                
+                // Додаємо більше монет для нових користувачів
+                coins = 500;
+                coinsCount.textContent = coins;
+                
+                // Переходимо до головного меню
+                changeScene('menu');
+            } else {
+                alert('Будь ласка, заповніть всі поля!');
+            }
+        });
+        
+        // Обробники подій для кнопок меню
+        playBtn.addEventListener('click', () => {
+            alert('Початок гри!');
+            // Тут буде логіка переходу до ігрової сцени
+        });
+        
+        shopBtn.addEventListener('click', () => {
+            alert('Відкриття магазину!');
+            // Тут буде логіка переходу до магазину
+        });
+        
+        settingsBtn.addEventListener('click', () => {
+            alert('Відкриття налаштувань!');
+            // Тут буде логіка переходу до налаштувань
+        });
+        
+        logoutBtn.addEventListener('click', () => {
+            // Повертаємося до сцени входу
+            changeScene('login');
+        });
+        
+        // Перевіряємо, чи користувач вже зареєстрований
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUsername = localStorage.getItem('username');
+            
+            if (savedUsername) {
+                // Якщо користувач вже зареєстрований, пропускаємо сцену входу
+                document.getElementById('username').value = savedUsername;
+                coins = 100;
+                coinsCount.textContent = coins;
+                changeScene('menu');
+            } else {
+                // Інакше починаємо зі сцени завантаження
+                simulateLoading();
+            }
+        });
+    </script>
+</body>
+</html>
